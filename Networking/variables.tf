@@ -14,3 +14,9 @@ variable "env" {
   type        = string
   description = "Deployment Environment"
 }
+
+variable "project_name" {
+  type        = string
+  default     = "ACSFinalProject"
+  description = "Name of the project to be used as prefix"
+}
