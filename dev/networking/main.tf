@@ -1,11 +1,11 @@
 # Provider
 provider "aws" {
-    region = var.region
+  region = var.region
 }
 
 # List of all available availability zones
 data "aws_availability_zones" "available" {
-    state = "available"
+  state = "available"
 }
 
 # Local variables
@@ -19,13 +19,13 @@ locals {
 
 # VPC in which our architecture will be deployed
 resource "aws_vpc" "main" {
-    cidr_block = var.vpc_cidr
-    instance_tenancy = "default"
-    tags = merge (
-        var.default_tags, {
-            Name = "${name_prefix}-VPC"
-        }
-    )
+  cidr_block       = var.vpc_cidr
+  instance_tenancy = "default"
+  tags = merge(
+    var.default_tags, {
+      Name = "${local.name_prefix}-VPC"
+    }
+  )
 }
 
 # Public subnets
