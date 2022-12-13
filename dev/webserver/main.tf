@@ -41,9 +41,10 @@ resource "aws_instance" "amazon_server" {
   ami                         = data.aws_ami.latest_amazon_linux.id
   instance_type               = var.instance_type
   key_name                    = aws_key_pair.web_key.key_name
-  subnet_id                   = data.terraform_remote_state.network.outputs.private_subnet_ids[0]
+  subnet_id                   = data.terraform_remote_state.network.outputs.public_subnet_ids[0]
   security_groups             = [aws_security_group.web_sg.id]
-  associate_public_ip_address = false
+  associate_public_ip_address = true
+  user_data                   = file("${path.module}/user_data.sh")
 
   root_block_device {
     encrypted = var.env == "prod" ? true : false
@@ -58,6 +59,30 @@ resource "aws_instance" "amazon_server" {
       "Name" = "${var.acs_group}-Amazon-Linux"
     }
   )
+}
+
+resource "aws_launch_configuration" "launch_config" {
+  name_prefix     = "lt-"
+  image_id        = aws_instance.amazon_server.ami
+  instance_type   = aws_instance.amazon_server.instance_type
+  user_data       = aws_instance.amazon_server.user_data
+  key_name        = aws_instance.amazon_server.key_name
+  security_groups             = [aws_security_group.web_sg.id]
+  associate_public_ip_address = true
+  
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_autoscaling_group" "asg" {
+  name = "${aws_launch_configuration.launch_config.name}-asg"
+  desired_capacity   = 1
+  max_size           = 4
+  min_size           = 1
+  launch_configuration = aws_launch_configuration.launch_config.name
+  vpc_zone_identifier  = [aws_instance.amazon_server.subnet_id]
+
 }
 
 resource "aws_security_group" "web_sg" {
