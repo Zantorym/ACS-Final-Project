@@ -20,7 +20,7 @@ variable "env" {
 }
 
 variable "instance_type" {
-  default = "t3.micro"
-  type    = string 
+  default     = "t3.micro"
+  type        = string
   description = "Type of the instance"
 }
