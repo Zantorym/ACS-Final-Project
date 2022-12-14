@@ -1,4 +1,3 @@
-# Provider
 provider "aws" {
   region = var.region
 }
@@ -79,7 +78,7 @@ resource "aws_eip" "eip" {
 # Nat Gateway for private subnets
 resource "aws_nat_gateway" "nat_gw" {
   allocation_id = aws_eip.eip.id
-  subnet_id     = aws_subnet.public_subnet[0].id
+  subnet_id     = aws_subnet.public_subnet[1].id
   depends_on    = [aws_internet_gateway.igw]
   tags = merge(local.default_tags,
     {
@@ -122,12 +121,12 @@ resource "aws_route_table" "public_route_table" {
 resource "aws_route_table_association" "public_route_table_association" {
   count          = length(aws_subnet.public_subnet[*].id)
   route_table_id = aws_route_table.public_route_table.id
-  subnet_id      = aws_subnet.public_subnet[count.index].id
+  subnet_id      = aws_subnet.public_subnet.*.id[count.index]
 }
 
 # Assosciating private subnets with the private route table
 resource "aws_route_table_association" "private_route_table_association" {
   count          = length(aws_subnet.private_subnet[*].id)
   route_table_id = aws_route_table.private_route_table.id
-  subnet_id      = aws_subnet.private_subnet[count.index].id
+  subnet_id      = aws_subnet.private_subnet.*.id[count.index]
 }
