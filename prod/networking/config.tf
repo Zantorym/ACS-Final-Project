@@ -1,7 +1,7 @@
 terraform {
   backend "s3" {
-    bucket = "final-prod-s3"
-    key    = "network/terraform.tfstate"
+    bucket = "s3-final-prod"
+    key    = "prod-networking/terraform.tfstate"
     region = "us-east-1"
   }
 }
