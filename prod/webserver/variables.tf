@@ -20,7 +20,23 @@ variable "env" {
 }
 
 variable "instance_type" {
-  default = "t3.medium"
-  type    = string 
+  default     = "t3.medium"
+  type        = string
   description = "Type of the instance"
+}
+
+variable "tg_protocol" {
+  default = "HTTP"
+}
+
+variable "tg_port" {
+  default = 80
+}
+
+variable "listener_protocol" {
+  default = "HTTP"
+}
+
+variable "listener_port" {
+  default = 80
 }
