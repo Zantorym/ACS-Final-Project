@@ -24,10 +24,6 @@ data "aws_availability_zones" "available" {
   state = "available"
 }
 
-data "template_file" "test" {
-  template = file("${path.module}/user_data.sh")
-}
-
 locals {
   default_tags = merge(
     var.default_tags,
@@ -79,7 +75,7 @@ resource "aws_launch_template" "amazon_server" {
   instance_type          = var.instance_type
   vpc_security_group_ids = [aws_security_group.my_private_sg.id]
   key_name               = aws_key_pair.web_key.key_name
-  user_data              = base64encode(data.template_file.test.rendered)
+  user_data              = base64encode(file("${path.module}/user_data.sh.tpl"))
 
   tags = {
     Name = "amazon_server"
@@ -100,8 +96,44 @@ resource "aws_autoscaling_group" "amazon_server_asg" {
   }
 }
 
-# resource "aws_autoscaling_attachment" "asg_attachment_bar" {
-#   autoscaling_group_name = aws_autoscaling_group.amazon_server_asg.id
-#   # elb                    = var.elb
-#   lb_target_group_arn = aws_lb_target_group.my_tg.arn
-# }
+resource "aws_autoscaling_policy" "scale_out" {
+  name = "scale-out-policy"
+  autoscaling_group_name = "${aws_autoscaling_group.amazon_server_asg.name}"
+  adjustment_type = "ChangeInCapacity"
+  scaling_adjustment = 1
+  cooldown = 60
+}
+
+resource "aws_cloudwatch_metric_alarm" "scale_out" {
+  alarm_name = "scale-out-alarm"
+  comparison_operator = "GreaterThanOrEqualToThreshold"
+  evaluation_periods = "1"
+  metric_name = "CPUUtilization"
+  namespace = "AWS/EC2"
+  statistic = "Average"
+  threshold = "10"
+  period = "60"
+  alarm_description = "This alarm will trigger the scale-out policy if the average CPU utilization crosses 10% for 60 seconds"
+  alarm_actions = ["${aws_autoscaling_policy.scale_out.arn}"]
+}
+
+resource "aws_autoscaling_policy" "scale_in" {
+  name = "scale-in-policy"
+  autoscaling_group_name = "${aws_autoscaling_group.amazon_server_asg.name}"
+  adjustment_type = "ChangeInCapacity"
+  scaling_adjustment = -1
+  cooldown = 60
+}
+
+resource "aws_cloudwatch_metric_alarm" "scale_in" {
+  alarm_name = "scale-in-alarm"
+  comparison_operator = "LessThanOrEqualToThreshold"
+  evaluation_periods = "1"
+  metric_name = "CPUUtilization"
+  namespace = "AWS/EC2"
+  statistic = "Average"
+  threshold = "5"
+  period = "60"
+  alarm_description = "This alarm will trigger the scale-in policy if the average CPU utilization is less than 5% for 60 seconds"
+  alarm_actions = ["${aws_autoscaling_policy.scale_in.arn}"]
+}
