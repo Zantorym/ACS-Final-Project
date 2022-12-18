@@ -37,12 +37,13 @@ resource "aws_key_pair" "web_key" {
   public_key = file("${var.acs_group}.pub")
 }
 
-resource "aws_launch_template" "my_bastion" {
-  name_prefix            = "my_bastion"
-  image_id               = data.aws_ami.latest_amazon_linux.id
-  instance_type          = var.instance_type
-  vpc_security_group_ids = [aws_security_group.my_public_sg.id]
-  key_name               = aws_key_pair.web_key.key_name
+resource "aws_instance" "my_bastion" {
+  ami                         = data.aws_ami.latest_amazon_linux.id
+  instance_type               = var.instance_type
+  key_name                    = aws_key_pair.web_key.key_name
+  subnet_id                   = data.terraform_remote_state.network.outputs.public_subnet_ids[0]
+  security_groups             = [aws_security_group.my_public_sg.id]
+  associate_public_ip_address = true
 
   lifecycle {
     create_before_destroy = true
@@ -54,19 +55,6 @@ resource "aws_launch_template" "my_bastion" {
 
     }
   )
-}
-
-resource "aws_autoscaling_group" "my_bastion" {
-  name                = "my_bastion"
-  vpc_zone_identifier = tolist(data.terraform_remote_state.network.outputs.public_subnet_ids)
-  min_size            = 1
-  max_size            = 1
-  desired_capacity    = 1
-
-  launch_template {
-    id      = aws_launch_template.my_bastion.id
-    version = "$Latest"
-  }
 }
 
 resource "aws_launch_template" "amazon_server" {
@@ -97,43 +85,43 @@ resource "aws_autoscaling_group" "amazon_server_asg" {
 }
 
 resource "aws_autoscaling_policy" "scale_out" {
-  name = "scale-out-policy"
-  autoscaling_group_name = "${aws_autoscaling_group.amazon_server_asg.name}"
-  adjustment_type = "ChangeInCapacity"
-  scaling_adjustment = 1
-  cooldown = 60
+  name                   = "scale-out-policy"
+  autoscaling_group_name = aws_autoscaling_group.amazon_server_asg.name
+  adjustment_type        = "ChangeInCapacity"
+  scaling_adjustment     = 1
+  cooldown               = 60
 }
 
 resource "aws_cloudwatch_metric_alarm" "scale_out" {
-  alarm_name = "scale-out-alarm"
+  alarm_name          = "scale-out-alarm"
   comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods = "1"
-  metric_name = "CPUUtilization"
-  namespace = "AWS/EC2"
-  statistic = "Average"
-  threshold = "10"
-  period = "60"
-  alarm_description = "This alarm will trigger the scale-out policy if the average CPU utilization crosses 10% for 60 seconds"
-  alarm_actions = ["${aws_autoscaling_policy.scale_out.arn}"]
+  evaluation_periods  = "1"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  statistic           = "Average"
+  threshold           = "10"
+  period              = "60"
+  alarm_description   = "This alarm will trigger the scale-out policy if the average CPU utilization crosses 10% for 60 seconds"
+  alarm_actions       = ["${aws_autoscaling_policy.scale_out.arn}"]
 }
 
 resource "aws_autoscaling_policy" "scale_in" {
-  name = "scale-in-policy"
-  autoscaling_group_name = "${aws_autoscaling_group.amazon_server_asg.name}"
-  adjustment_type = "ChangeInCapacity"
-  scaling_adjustment = -1
-  cooldown = 60
+  name                   = "scale-in-policy"
+  autoscaling_group_name = aws_autoscaling_group.amazon_server_asg.name
+  adjustment_type        = "ChangeInCapacity"
+  scaling_adjustment     = -1
+  cooldown               = 60
 }
 
 resource "aws_cloudwatch_metric_alarm" "scale_in" {
-  alarm_name = "scale-in-alarm"
+  alarm_name          = "scale-in-alarm"
   comparison_operator = "LessThanOrEqualToThreshold"
-  evaluation_periods = "1"
-  metric_name = "CPUUtilization"
-  namespace = "AWS/EC2"
-  statistic = "Average"
-  threshold = "5"
-  period = "60"
-  alarm_description = "This alarm will trigger the scale-in policy if the average CPU utilization is less than 5% for 60 seconds"
-  alarm_actions = ["${aws_autoscaling_policy.scale_in.arn}"]
+  evaluation_periods  = "1"
+  metric_name         = "CPUUtilization"
+  namespace           = "AWS/EC2"
+  statistic           = "Average"
+  threshold           = "5"
+  period              = "60"
+  alarm_description   = "This alarm will trigger the scale-in policy if the average CPU utilization is less than 5% for 60 seconds"
+  alarm_actions       = ["${aws_autoscaling_policy.scale_in.arn}"]
 }
