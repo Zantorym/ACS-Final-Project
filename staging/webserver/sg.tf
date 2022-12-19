@@ -1,7 +1,7 @@
-resource "aws_security_group" "public_sg" {
+resource "aws_security_group" "my_public_sg" {
   name        = "my_public_sg"
   description = "Allow SSH inbound traffic"
-  vpc_id      = data.terraform_remote_state.networking.outputs.vpc_id
+  vpc_id      = data.terraform_remote_state.network.outputs.vpc_id
 
   ingress {
     from_port        = 22
@@ -20,23 +20,16 @@ resource "aws_security_group" "public_sg" {
   }
 }
 
-resource "aws_security_group" "private_sg" {
+resource "aws_security_group" "my_private_sg" {
   name        = "my_private_sg"
   description = "Allow SSH inbound traffic from Bastion Host"
-  vpc_id      = data.terraform_remote_state.networking.outputs.vpc_id
+  vpc_id      = data.terraform_remote_state.network.outputs.vpc_id
 
   ingress {
     from_port       = 22
     to_port         = 22
     protocol        = "tcp"
-    security_groups = [aws_security_group.public_sg.id]
-  }
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    security_groups = [aws_security_group.my_public_sg.id]
   }
 
   ingress {
@@ -57,7 +50,7 @@ resource "aws_security_group" "private_sg" {
 resource "aws_security_group" "my_web_sg" {
   name        = "my_web_sg"
   description = "Allow all inbound HTTP traffic"
-  vpc_id      = data.terraform_remote_state.networking.outputs.vpc_id
+  vpc_id      = data.terraform_remote_state.network.outputs.vpc_id
 
   ingress {
     from_port   = 80
