@@ -49,7 +49,27 @@ resource "aws_launch_template" "amazon_server" {
 
   tags = merge(local.default_tags,
     {
-      Name = "${var.acs_group}-Webser-VM-[count.index]"
+      Name = "${var.acs_group}-Webser-VM"
+    }
+  )
+}
+
+resource "aws_instance" "my_bastion" {
+  ami                         = data.aws_ami.websrv_amazon_linux.id
+  instance_type               = var.instance_type
+  key_name                    = aws_key_pair.web_key.key_name
+  subnet_id                   = data.terraform_remote_state.networking.outputs.public_subnet_ids[0]
+  security_groups             = [aws_security_group.public_sg.id]
+  associate_public_ip_address = true
+
+  lifecycle {
+    create_before_destroy = true
+  }
+
+  tags = merge(local.default_tags,
+    {
+      "Name" = "${var.acs_group}-Bastion"
+
     }
   )
 }
@@ -60,9 +80,11 @@ resource "aws_autoscaling_group" "websrv_asg" {
   min_size            = 1
   max_size            = 3
   desired_capacity    = 1
+
+  target_group_arns = [aws_lb_target_group.my_tg.arn]
   launch_template {
     id      = aws_launch_template.amazon_server.id
-    version = "$latest"
+    version = "$Latest"
   }
 }
 
