@@ -4,9 +4,9 @@ resource "aws_lb" "my_lb" {
   load_balancer_type = "application"
   security_groups    = [aws_security_group.my_web_sg.id]
   subnets            = data.terraform_remote_state.network.outputs.public_subnet_ids[*]
-  # depends_on = [
-  #   aws_autoscaling_group.amazon_server_asg
-  # ]
+  depends_on = [
+    aws_autoscaling_group.amazon_server_asg
+  ]
 }
 
 resource "aws_lb_target_group" "my_tg" {

@@ -75,6 +75,7 @@ resource "aws_eip" "eip" {
   )
 }
 
+
 # Nat Gateway for private subnets
 resource "aws_nat_gateway" "nat_gw" {
   allocation_id = aws_eip.eip.id
