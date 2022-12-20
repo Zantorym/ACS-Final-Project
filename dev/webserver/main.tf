@@ -63,7 +63,7 @@ resource "aws_launch_template" "amazon_server" {
   instance_type          = var.instance_type
   vpc_security_group_ids = [aws_security_group.my_private_sg.id]
   key_name               = aws_key_pair.web_key.key_name
-  user_data              = base64encode(file("${path.module}/user_data.sh.tpl"))
+  user_data = base64encode(file("${path.module}/user_data.sh.tpl"))
 
   tags = {
     Name = "amazon_server"
@@ -101,8 +101,11 @@ resource "aws_cloudwatch_metric_alarm" "scale_out" {
   statistic           = "Average"
   threshold           = "10"
   period              = "60"
-  alarm_description   = "This alarm will trigger the scale-out policy if the average CPU utilization crosses 10% for 60 seconds"
-  alarm_actions       = ["${aws_autoscaling_policy.scale_out.arn}"]
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.amazon_server_asg.name
+  }
+  alarm_description = "This alarm will trigger the scale-out policy if the average CPU utilization crosses 10% for 60 seconds"
+  alarm_actions     = [aws_autoscaling_policy.scale_out.arn]
 }
 
 resource "aws_autoscaling_policy" "scale_in" {
@@ -122,6 +125,9 @@ resource "aws_cloudwatch_metric_alarm" "scale_in" {
   statistic           = "Average"
   threshold           = "5"
   period              = "60"
-  alarm_description   = "This alarm will trigger the scale-in policy if the average CPU utilization is less than 5% for 60 seconds"
-  alarm_actions       = ["${aws_autoscaling_policy.scale_in.arn}"]
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.amazon_server_asg.name
+  }
+  alarm_description = "This alarm will trigger the scale-in policy if the average CPU utilization is less than 5% for 60 seconds"
+  alarm_actions     = [aws_autoscaling_policy.scale_in.arn]
 }

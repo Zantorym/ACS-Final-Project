@@ -26,25 +26,25 @@ variable "instance_type" {
 }
 
 variable "tg_protocol" {
-  default = "HTTP"
-  type = string
+  default     = "HTTP"
+  type        = string
   description = "Target group protocol"
 }
 
 variable "tg_port" {
-  default = 80
-  type = number
+  default     = 80
+  type        = number
   description = "Target group port"
 }
 
 variable "listener_protocol" {
-  default = "HTTP"
-  type = string
+  default     = "HTTP"
+  type        = string
   description = "Listener protocol"
 }
 
 variable "listener_port" {
-  default = 80
-  type = number
+  default     = 80
+  type        = number
   description = "Listener port"
 }
