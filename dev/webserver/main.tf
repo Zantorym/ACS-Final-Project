@@ -52,7 +52,6 @@ resource "aws_instance" "my_bastion" {
   tags = merge(local.default_tags,
     {
       "Name" = "${var.acs_group}-Bastion"
-
     }
   )
 }
@@ -63,6 +62,9 @@ resource "aws_launch_template" "amazon_server" {
   instance_type          = var.instance_type
   vpc_security_group_ids = [aws_security_group.my_private_sg.id]
   key_name               = aws_key_pair.web_key.key_name
+  iam_instance_profile {
+    name = "LabInstanceProfile"
+  }
   user_data = base64encode(file("${path.module}/user_data.sh.tpl"))
 
   tags = {
