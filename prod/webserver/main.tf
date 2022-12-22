@@ -14,7 +14,7 @@ data "aws_ami" "websrv_amazon_linux" {
 data "terraform_remote_state" "networking" {
   backend = "s3"
   config = {
-    bucket = "${var.env}-s3-acsgroup13-jp"
+    bucket = "${var.env}-s3-acsgroup13"
     key    = "${var.env}-network/terraform.tfstate"
     region = "us-east-1"
   }
