@@ -32,7 +32,7 @@ variable "asg_max_size" {
 }
 
 variable "asg_desired_capacity" {
-  default     = 1
+  default     = 2
   type        = number
   description = "Desired number of instances in auto scaling group"
 }
