@@ -7,12 +7,6 @@ variable "default_tags" {
   description = "Default tags to be applied to all AWS resources"
 }
 
-variable "prefix" {
-  default     = "Group13"
-  type        = string
-  description = "Name of the group to be used as prefix"
-}
-
 variable "env" {
   default     = "prod"
   type        = string
@@ -20,8 +14,8 @@ variable "env" {
 }
 
 variable "vpc_cidr" {
-  default = "10.250.0.0/16"
-  type = string
+  default     = "10.250.0.0/16"
+  type        = string
   description = "CIDR range of VPC for the PROD environment"
 }
 

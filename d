@@ -1,0 +1,15 @@
+credential.helper=!aws codecommit credential-helper $@
+credential.usehttppath=true
+core.editor=nano
+user.email=hashah7@myseneca.ca
+user.name=Harsh Shah
+core.repositoryformatversion=0
+core.filemode=true
+core.bare=false
+core.logallrefupdates=true
+remote.origin.url=git@github.com:Zantorym/ACS-Final-Project.git
+remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+branch.prod.remote=origin
+branch.prod.merge=refs/heads/prod
+branch.dev.remote=origin
+branch.dev.merge=refs/heads/dev
