@@ -14,7 +14,7 @@ data "aws_ami" "websrv_amazon_linux" {
 data "terraform_remote_state" "networking" {
   backend = "s3"
   config = {
-    bucket = "s3-final-prod"
+    bucket = "prod-s3-acsgroup13"
     key    = "prod-networking/terraform.tfstate"
     region = "us-east-1"
   }
@@ -23,7 +23,6 @@ data "terraform_remote_state" "networking" {
 data "aws_availability_zones" "available" {
   state = "available"
 }
-
 
 locals {
   default_tags = merge(
@@ -38,28 +37,27 @@ resource "aws_key_pair" "web_key" {
   public_key = file("${var.acs_group}.pub")
 }
 
-
 resource "aws_launch_template" "amazon_server" {
   name_prefix            = "amazon_server-"
   image_id               = data.aws_ami.websrv_amazon_linux.id
   instance_type          = var.instance_type
-  vpc_security_group_ids = [aws_security_group.public_sg.id]
+  vpc_security_group_ids = [aws_security_group.my_public_sg.id]
   key_name               = aws_key_pair.web_key.key_name
+  iam_instance_profile {
+    name = "LabInstanceProfile"
+  }
   user_data              = base64encode(file("/home/ec2-user/environment/ACS-Final-Project/prod/webserver/user_data.sh"))
 
-  tags = merge(local.default_tags,
-    {
-      Name = "${var.acs_group}-Webser-VM"
-    }
-  )
+  tags = {
+    Name = "amazon_server"
+  }
 }
-
 resource "aws_instance" "my_bastion" {
   ami                         = data.aws_ami.websrv_amazon_linux.id
   instance_type               = var.instance_type
   key_name                    = aws_key_pair.web_key.key_name
   subnet_id                   = data.terraform_remote_state.networking.outputs.public_subnet_ids[0]
-  security_groups             = [aws_security_group.public_sg.id]
+  security_groups             = [aws_security_group.my_public_sg.id]
   associate_public_ip_address = true
 
   lifecycle {
@@ -105,8 +103,11 @@ resource "aws_cloudwatch_metric_alarm" "scale_out" {
   statistic           = "Average"
   threshold           = "10"
   period              = "60"
-  alarm_description   = "This alarm will trigger the scale-out policy if the average CPU utilization crosses 10% for 60 seconds"
-  alarm_actions       = ["${aws_autoscaling_policy.scale_out.arn}"]
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.websrv_asg.name
+  }
+  alarm_description = "This alarm will trigger the scale-out policy if the average CPU utilization crosses 10% for 60 seconds"
+  alarm_actions     = ["${aws_autoscaling_policy.scale_out.arn}"]
 }
 
 resource "aws_autoscaling_policy" "scale_in" {
@@ -126,6 +127,9 @@ resource "aws_cloudwatch_metric_alarm" "scale_in" {
   statistic           = "Average"
   threshold           = "5"
   period              = "60"
-  alarm_description   = "This alarm will trigger the scale-in policy if the average CPU utilization is less than 5% for 60 seconds"
-  alarm_actions       = ["${aws_autoscaling_policy.scale_in.arn}"]
+  dimensions = {
+    AutoScalingGroupName = aws_autoscaling_group.websrv_asg.name
+  }
+  alarm_description = "This alarm will trigger the scale-in policy if the average CPU utilization is less than 5% for 60 seconds"
+  alarm_actions     = ["${aws_autoscaling_policy.scale_in.arn}"]
 }

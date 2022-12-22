@@ -1,5 +1,5 @@
-resource "aws_lb" "loadbalancer" {
-  name               = "loadbalancer"
+resource "aws_lb" "my_lb" {
+  name               = "my-loadbalancer"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.my_web_sg.id]
@@ -22,7 +22,7 @@ resource "aws_lb_target_group" "my_tg" {
 }
 
 resource "aws_lb_listener" "my_lb_listener" {
-  load_balancer_arn = aws_lb.loadbalancer.arn
+  load_balancer_arn = aws_lb.my_lb.arn
   port              = var.listener_port
   protocol          = var.listener_protocol
   default_action {
