@@ -7,12 +7,6 @@ variable "default_tags" {
   description = "Default tags to be applied to all AWS resources"
 }
 
-variable "acs_group" {
-  default     = "Group13"
-  type        = string
-  description = "Name of the group to be used as prefix"
-}
-
 variable "env" {
   default     = "staging"
   type        = string
@@ -24,26 +18,21 @@ variable "instance_type" {
   type    = string 
   description = "Type of the instance"
 }
-variable "tg_protocol" {
-  default = "HTTP"
-  type = string
-  description = "Target group protocol"
+
+variable "asg_min_size" {
+  default     = 1
+  type        = number
+  description = "Minimum number of instances in auto scaling group"
 }
 
-variable "tg_port" {
-  default = 80
-  type = number
-  description = "Target group port"
+variable "asg_max_size" {
+  default     = 4
+  type        = number
+  description = "Maximum number of instances in auto scaling group"
 }
 
-variable "listener_protocol" {
-  default = "HTTP"
-  type = string
-  description = "Listener protocol"
-}
-
-variable "listener_port" {
-  default = 80
-  type = number
-  description = "Listener port"
+variable "asg_desired_capacity" {
+  default     = 3
+  type        = number
+  description = "Desired number of instances in auto scaling group"
 }

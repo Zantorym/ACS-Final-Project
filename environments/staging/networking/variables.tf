@@ -7,22 +7,10 @@ variable "default_tags" {
   description = "Default tags to be applied to all AWS resources"
 }
 
-variable "acs_group" {
-  default     = "Group13"
-  type        = string
-  description = "Name of the group to be used as prefix"
-}
-
 variable "env" {
   default     = "staging"
   type        = string
   description = "Staging Environment"
-}
-
-variable "region" {
-  default     = "us-east-1"
-  type        = string
-  description = "AWS region in which our architecture is being deployed"
 }
 
 variable "vpc_cidr" {

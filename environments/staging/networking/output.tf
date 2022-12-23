@@ -1,11 +1,11 @@
 output "vpc_id" {
-  value = aws_vpc.main.id
+  value = module.network-staging.vpc_id
 }
 
 output "public_subnet_ids" {
-  value = aws_subnet.public_subnet[*].id
+  value = module.network-staging.public_subnet_ids
 }
 
 output "private_subnet_ids" {
-  value = aws_subnet.private_subnet[*].id
+  value = module.network-staging.private_subnet_ids
 }
