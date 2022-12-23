@@ -1,5 +1,5 @@
 module "webserver-dev" {
-  source               = "../../modules/aws_webserver"
+  source               = "../../../modules/aws_webserver"
   env                  = var.env
   instance_type        = var.instance_type
   asg_min_size         = var.asg_min_size
