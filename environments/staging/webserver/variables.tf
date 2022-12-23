@@ -14,8 +14,8 @@ variable "env" {
 }
 
 variable "instance_type" {
-  default = "t3.small"
-  type    = string 
+  default     = "t3.small"
+  type        = string
   description = "Type of the instance"
 }
 
