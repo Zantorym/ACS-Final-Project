@@ -14,8 +14,8 @@ data "aws_ami" "latest_amazon_linux" {
 data "terraform_remote_state" "network" {
   backend = "s3"
   config = {
-    bucket = "${var.env}-s3-acsgroup13"
-    key    = "${var.env}-network/terraform.tfstate"
+    bucket = "${lower(var.env)}-s3-acsgroup13"
+    key    = "${lower(var.env)}-network/terraform.tfstate"
     region = "us-east-1"
   }
 }
@@ -85,6 +85,12 @@ resource "aws_autoscaling_group" "amazonServerASG" {
     id      = aws_launch_template.amazonWebserver.id
     version = "$Latest"
   }
+  
+  tag {
+    key = "Name"
+    value = "${local.name_prefix}-Webserver"
+    propagate_at_launch = true
+    }
 }
 
 resource "aws_autoscaling_policy" "scaleOutPolicy" {

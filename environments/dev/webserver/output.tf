@@ -17,3 +17,7 @@ output "load_balancer_id" {
 output "target_group_arn" {
   value = module.webserver-dev.target_group_arn
 }
+
+output "load_balancer_dns_name" {
+  value = module.webserver-dev.load_balancer_dns_name
+}
