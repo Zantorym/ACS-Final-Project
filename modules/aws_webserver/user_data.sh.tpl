@@ -39,7 +39,7 @@ echo "
        </div>
        <div class="col-md-6 col-lg-3">
          <div class="img-block mb-5">
-           <img src="https://www.wrappixel.com/demos/ui-kit/wrapkit/assets/images/team/t1.jpg" class="img-fluid  img-thumbnail rounded-circle" alt="image1">
+           <img src="harsh.jpeg" class="img-fluid  img-thumbnail rounded-circle" alt="image1">
            <div class="content mt-2">
              <h4>Harsh Alkesh Shah</h4>
            </div>
@@ -47,7 +47,7 @@ echo "
        </div>
        <div class="col-md-6 col-lg-3">
          <div class="img-block mb-5">
-           <img src="https://www.wrappixel.com/demos/ui-kit/wrapkit/assets/images/team/t3.jpg" class="img-fluid  img-thumbnail rounded-circle" alt="image1">
+           <img src="neil.jpeg" class="img-fluid  img-thumbnail rounded-circle" alt="image1">
            <div class="content mt-2">
              <h4>Neil Suryanarayanan</h4>
            </div>

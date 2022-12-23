@@ -1,4 +1,4 @@
-erraform {
+terraform {
   backend "s3" {
     bucket = "staging-s3-acsgroup13"
     key    = "staging-webserver/terraform.tfstate"
