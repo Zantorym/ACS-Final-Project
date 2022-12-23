@@ -1,5 +1,5 @@
-# ACS-Final-Project
-ACS730 NAA final project, fall '22, group 13
+# ACS730 NAA 
+## Final Project: Two-Tier web application automation with Terraform 
+## Group 13
+### Overview
 
-
-test 2

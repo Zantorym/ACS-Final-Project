@@ -8,7 +8,7 @@ variable "default_tags" {
 }
 
 variable "env" {
-  default     = "dev"
+  default     = "Dev"
   type        = string
   description = "Deployment environment"
 }

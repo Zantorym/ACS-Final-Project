@@ -17,9 +17,10 @@ locals {
 }
 
 # VPC in which our architecture will be deployed
-resource "aws_vpc" "main" {
+resource "aws_vpc" "mainVPC" {
   cidr_block       = var.vpc_cidr
   instance_tenancy = "default"
+  
   tags = merge(
     var.default_tags, {
       Name = "${local.name_prefix}-VPC"
@@ -28,11 +29,12 @@ resource "aws_vpc" "main" {
 }
 
 # Public subnets
-resource "aws_subnet" "public_subnet" {
+resource "aws_subnet" "publicSubnet" {
   count             = length(var.public_subnet_cidrs)
-  vpc_id            = aws_vpc.main.id
+  vpc_id            = aws_vpc.mainVPC.id
   cidr_block        = var.public_subnet_cidrs[count.index]
   availability_zone = data.aws_availability_zones.available.names[count.index]
+  
   tags = merge(
     local.default_tags, {
       Name = "${local.name_prefix}-Public-Subnet-${count.index}"
@@ -41,11 +43,12 @@ resource "aws_subnet" "public_subnet" {
 }
 
 # Private subnets
-resource "aws_subnet" "private_subnet" {
+resource "aws_subnet" "privateSubnet" {
   count             = length(var.private_subnet_cidrs)
-  vpc_id            = aws_vpc.main.id
+  vpc_id            = aws_vpc.mainVPC.id
   cidr_block        = var.private_subnet_cidrs[count.index]
   availability_zone = data.aws_availability_zones.available.names[count.index]
+  
   tags = merge(
     local.default_tags, {
       Name = "${local.name_prefix}-Private-Subnet-${count.index}"
@@ -54,8 +57,8 @@ resource "aws_subnet" "private_subnet" {
 }
 
 # Internet gateway
-resource "aws_internet_gateway" "igw" {
-  vpc_id = aws_vpc.main.id
+resource "aws_internet_gateway" "internetGateway" {
+  vpc_id = aws_vpc.mainVPC.id
 
   tags = merge(local.default_tags,
     {
@@ -67,7 +70,8 @@ resource "aws_internet_gateway" "igw" {
 # Elastic IP
 resource "aws_eip" "eip" {
   vpc        = true
-  depends_on = [aws_internet_gateway.igw]
+  depends_on = [aws_internet_gateway.internetGateway]
+  
   tags = merge(local.default_tags,
     {
       "Name" = "${local.name_prefix}-EIP"
@@ -76,10 +80,11 @@ resource "aws_eip" "eip" {
 }
 
 # Nat Gateway for private subnets
-resource "aws_nat_gateway" "nat_gw" {
+resource "aws_nat_gateway" "natGateway" {
   allocation_id = aws_eip.eip.id
-  subnet_id     = aws_subnet.public_subnet[1].id
-  depends_on    = [aws_internet_gateway.igw]
+  subnet_id     = aws_subnet.publicSubnet[1].id
+  depends_on    = [aws_internet_gateway.internetGateway]
+  
   tags = merge(local.default_tags,
     {
       "Name" = "${local.name_prefix}-Nat-GW"
@@ -88,11 +93,11 @@ resource "aws_nat_gateway" "nat_gw" {
 }
 
 # Route table for private subnets
-resource "aws_route_table" "private_route_table" {
-  vpc_id = aws_vpc.main.id
+resource "aws_route_table" "privateRouteTable" {
+  vpc_id = aws_vpc.mainVPC.id
   route {
     cidr_block     = "0.0.0.0/0"
-    nat_gateway_id = aws_nat_gateway.nat_gw.id
+    nat_gateway_id = aws_nat_gateway.natGateway.id
   }
 
   tags = merge(local.default_tags,
@@ -103,11 +108,11 @@ resource "aws_route_table" "private_route_table" {
 }
 
 # Route table for public subnets
-resource "aws_route_table" "public_route_table" {
-  vpc_id = aws_vpc.main.id
+resource "aws_route_table" "publicRouteTable" {
+  vpc_id = aws_vpc.mainVPC.id
   route {
     cidr_block = "0.0.0.0/0"
-    gateway_id = aws_internet_gateway.igw.id
+    gateway_id = aws_internet_gateway.internetGateway.id
   }
 
   tags = merge(local.default_tags,
@@ -118,15 +123,15 @@ resource "aws_route_table" "public_route_table" {
 }
 
 # Assosciating public subnets with the public route table
-resource "aws_route_table_association" "public_route_table_association" {
-  count          = length(aws_subnet.public_subnet[*].id)
-  route_table_id = aws_route_table.public_route_table.id
-  subnet_id      = aws_subnet.public_subnet.*.id[count.index]
+resource "aws_route_table_association" "publicRouteTableAssociation" {
+  count          = length(aws_subnet.publicSubnet[*].id)
+  route_table_id = aws_route_table.publicRouteTable.id
+  subnet_id      = aws_subnet.publicSubnet.*.id[count.index]
 }
 
 # Assosciating private subnets with the private route table
-resource "aws_route_table_association" "private_route_table_association" {
-  count          = length(aws_subnet.private_subnet[*].id)
-  route_table_id = aws_route_table.private_route_table.id
-  subnet_id      = aws_subnet.private_subnet.*.id[count.index]
+resource "aws_route_table_association" "privateRouteTableAssociation" {
+  count          = length(aws_subnet.privateSubnet[*].id)
+  route_table_id = aws_route_table.privateRouteTable.id
+  subnet_id      = aws_subnet.privateSubnet.*.id[count.index]
 }

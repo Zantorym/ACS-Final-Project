@@ -35,7 +35,7 @@ variable "default_tags" {
 
 variable "env" {
   type        = string
-  description = "Deployment Environment"
+  description = "Specifies the deployment environment"
 }
 
 variable "instance_type" {
