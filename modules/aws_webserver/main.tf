@@ -68,7 +68,7 @@ resource "aws_launch_template" "amazon_server" {
   user_data = base64encode(file("${path.module}/user_data.sh.tpl"))
 
   tags = {
-    Name = "amazon_server"
+    Name = "${var.acs_group}-amazon-server"
   }
 }
 
