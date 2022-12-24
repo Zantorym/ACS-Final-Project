@@ -1,3 +1,4 @@
+# SecurityGroup for SSH inbound traffic
 resource "aws_security_group" "publicSG" {
   name        = "${local.name_prefix}-Public-Security-Group"
   description = "Allow SSH inbound traffic"
@@ -26,6 +27,7 @@ resource "aws_security_group" "publicSG" {
   )
 }
 
+# SecurityGroup for Bastion
 resource "aws_security_group" "privateSG" {
   name        = "${local.name_prefix}-Private-Security-Group"
   description = "Allow SSH inbound traffic from Bastion Host"
@@ -59,6 +61,7 @@ resource "aws_security_group" "privateSG" {
   )
 }
 
+# SecurityGroup to allow traffic for website
 resource "aws_security_group" "webSG" {
   name        = "${local.name_prefix}-Web-Security-Group"
   description = "Allow all inbound HTTP traffic"

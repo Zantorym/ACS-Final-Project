@@ -1,3 +1,4 @@
+#Loadbalancer for the webserver instances
 resource "aws_lb" "loadBalancer" {
   name               = "${local.name_prefix}-LoadBalancer"
   internal           = false
@@ -15,6 +16,7 @@ resource "aws_lb" "loadBalancer" {
   )
 }
 
+#TargetGroup to route the requests on the targets
 resource "aws_lb_target_group" "targetGroup" {
   name     = "${local.name_prefix}-TargetGroup"
   protocol = var.tg_protocol
@@ -32,6 +34,7 @@ resource "aws_lb_target_group" "targetGroup" {
   )
 }
 
+#LoadBalancerListener rule
 resource "aws_lb_listener" "loadBalancerListener" {
   load_balancer_arn = aws_lb.loadBalancer.arn
   port              = var.listener_port

@@ -1,7 +1,9 @@
+#Define the provider
 provider "aws" {
   region = "us-east-1"
 }
 
+# Data source for AMI id
 data "aws_ami" "latest_amazon_linux" {
   owners      = ["amazon"]
   most_recent = true
@@ -11,6 +13,7 @@ data "aws_ami" "latest_amazon_linux" {
   }
 }
 
+# Calling RemoteState based on the Environments
 data "terraform_remote_state" "network" {
   backend = "s3"
   config = {
@@ -20,10 +23,12 @@ data "terraform_remote_state" "network" {
   }
 }
 
+# Data source for availability zones in us-east-1
 data "aws_availability_zones" "available" {
   state = "available"
 }
 
+# Define tags locally
 locals {
   default_tags = merge(
     var.default_tags,
@@ -32,11 +37,13 @@ locals {
   name_prefix = "${var.acs_group}-${var.env}"
 }
 
+# Provision SSH key pair for the instances
 resource "aws_key_pair" "sshKey" {
   key_name   = local.name_prefix
   public_key = file("${local.name_prefix}.pub")
 }
 
+# Creating BastionServer
 resource "aws_instance" "bastionServer" {
   ami                         = data.aws_ami.latest_amazon_linux.id
   instance_type               = var.instance_type
@@ -56,6 +63,7 @@ resource "aws_instance" "bastionServer" {
   )
 }
 
+# Creating launch template during autoscaling
 resource "aws_launch_template" "amazonWebserver" {
   name_prefix            = "${local.name_prefix}-Webserver"
   image_id               = data.aws_ami.latest_amazon_linux.id
@@ -83,6 +91,7 @@ resource "aws_launch_template" "amazonWebserver" {
   )
 }
 
+# AutoScalingGroup for the instances
 resource "aws_autoscaling_group" "amazonServerASG" {
   name                = "${local.name_prefix}-Webserver-ASG"
   vpc_zone_identifier = tolist(data.terraform_remote_state.network.outputs.private_subnet_ids)
@@ -102,6 +111,7 @@ resource "aws_autoscaling_group" "amazonServerASG" {
     }
 }
 
+# Scale out policy for AutoScalingGroup
 resource "aws_autoscaling_policy" "scaleOutPolicy" {
   name                   = "${local.name_prefix}-Scale-Out-Policy"
   autoscaling_group_name = aws_autoscaling_group.amazonServerASG.name
@@ -110,6 +120,7 @@ resource "aws_autoscaling_policy" "scaleOutPolicy" {
   cooldown               = 60
 }
 
+# Parameters set for the ScaleOutPolicy
 resource "aws_cloudwatch_metric_alarm" "scaleOutAlarm" {
   alarm_name          = "${local.name_prefix}-Scale-Out-Alarm"
   comparison_operator = "GreaterThanOrEqualToThreshold"
@@ -126,6 +137,7 @@ resource "aws_cloudwatch_metric_alarm" "scaleOutAlarm" {
   alarm_actions     = [aws_autoscaling_policy.scaleOutPolicy.arn]
 }
 
+# Scale in policy for AutoScalingGroup
 resource "aws_autoscaling_policy" "scaleInPolicy" {
   name                   = "${local.name_prefix}-Scale-In-Policy"
   autoscaling_group_name = aws_autoscaling_group.amazonServerASG.name
@@ -134,6 +146,7 @@ resource "aws_autoscaling_policy" "scaleInPolicy" {
   cooldown               = 60
 }
 
+# Parameters set for the ScaleInPolicy
 resource "aws_cloudwatch_metric_alarm" "scaleInAlarm" {
   alarm_name          = "${local.name_prefix}-Scale-In-Alarm"
   comparison_operator = "LessThanOrEqualToThreshold"

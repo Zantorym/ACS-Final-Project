@@ -20,7 +20,7 @@ variable "instance_type" {
 }
 
 variable "asg_min_size" {
-  default     = 2
+  default     = 1
   type        = number
   description = "Minimum number of instances in auto scaling group"
 }
