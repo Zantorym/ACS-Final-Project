@@ -1,10 +1,10 @@
 #!/bin/bash
 sudo yum -y update
 sudo yum -y install httpd
-sudo aws s3 cp s3://data-s3-acsgroup13/images/Jass.jpeg /var/www/html
-sudo aws s3 cp s3://data-s3-acsgroup13/images/jaishreej.jpeg /var/www/html
-sudo aws s3 cp s3://data-s3-acsgroup13/images/harsh.jpeg /var/www/html
-sudo aws s3 cp s3://data-s3-acsgroup13/images/neil.jpeg /var/www/html
+sudo aws s3 cp s3://${lower(env)}-s3-acsgroup13/images/Jass.jpeg /var/www/html
+sudo aws s3 cp s3://${lower(env)}-s3-acsgroup13/images/jaishreej.jpeg /var/www/html
+sudo aws s3 cp s3://${lower(env)}-s3-acsgroup13/images/harsh.jpeg /var/www/html
+sudo aws s3 cp s3://${lower(env)}-s3-acsgroup13/images/neil.jpeg /var/www/html
 myip=`curl http://169.254.169.254/latest/meta-data/local-ipv4`
 sudo systemctl start httpd
 sudo systemctl enable httpd

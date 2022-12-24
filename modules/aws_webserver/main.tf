@@ -65,7 +65,16 @@ resource "aws_launch_template" "amazonWebserver" {
   iam_instance_profile {
     name = "LabInstanceProfile"
   }
-  user_data = base64encode(file("${path.module}/user_data.sh.tpl"))
+  user_data = base64encode(templatefile("${path.module}/user_data.sh.tpl", 
+    { 
+      env=var.env
+    }
+  )
+  )
+  
+  lifecycle{
+    create_before_destroy = true
+  }
 
   tags = merge(local.default_tags,
     {

@@ -8,19 +8,19 @@ variable "default_tags" {
 }
 
 variable "env" {
-  default     = "prod"
+  default     = "Prod"
   type        = string
-  description = "Production Environment"
+  description = "Deployment Environment"
 }
 
 variable "instance_type" {
-  default     = "t3.medium"
+  default     = "t3.micro"
   type        = string
   description = "Type of the instance"
 }
 
 variable "asg_min_size" {
-  default     = 1
+  default     = 3
   type        = number
   description = "Minimum number of instances in auto scaling group"
 }
